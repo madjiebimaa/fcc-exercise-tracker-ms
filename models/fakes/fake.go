@@ -8,13 +8,15 @@ import (
 )
 
 var (
-	user_id  = primitive.NewObjectID()
-	username = "madjiebimaa"
+	UserIDStr = "62034f817663d57f03323508"
+	UserID, _ = primitive.ObjectIDFromHex(UserIDStr)
+	UserName  = "madjiebimaa"
 
-	exercise_id = primitive.NewObjectID()
-	description = "finished backend freecodecamp courses"
-	duration    = 3
-	date        = "2022-02-09"
-	dateTime, _ = helpers.StripedDateToTime(date)
-	strDate     = dateTime.Format(time.RFC1123)
+	ExerciseIDStr = "62034fe2fceb658638410a09"
+	ExerciseID, _ = primitive.ObjectIDFromHex(ExerciseIDStr)
+	Description   = "finished backend freecodecamp courses"
+	Duration      = 3
+	Date          = "2022-02-09"
+	DateTime, _   = helpers.StripedDateToTime(Date)
+	StrDate       = DateTime.Format(time.RFC1123)
 )

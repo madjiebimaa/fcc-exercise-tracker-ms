@@ -1,54 +1,43 @@
 package services_test
 
-// import (
-// 	"context"
-// 	"errors"
-// 	"testing"
-// 	"time"
+import (
+	"context"
+	"testing"
+	"time"
 
-// 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
-// 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models/fakes"
-// 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models/mocks"
-// 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/services"
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/mock"
-// )
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models/fakes"
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models/mocks"
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/services"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
-// func TestUserRegister(t *testing.T) {
-// 	u := fakes.FakeUser()
-// 	interErr := errors.New("internal server error")
+func TestUserRegister(t *testing.T) {
+	userRepo := new(mocks.UserRepository)
+	userService := services.NewUserService(userRepo, 2*time.Second)
 
-// 	testCases := []struct {
-// 		name    string
-// 		resRepo error
-// 		reqSer  models.User
-// 		resSer  error
-// 	}{
-// 		{
-// 			name:    "success",
-// 			resRepo: nil,
-// 			reqSer:  u,
-// 			resSer:  nil,
-// 		},
-// 		{
-// 			name:    "fail register in repository",
-// 			resRepo: interErr,
-// 			reqSer:  u,
-// 			resSer:  interErr,
-// 		},
-// 	}
+	t.Run("success", func(t *testing.T) {
+		fakeReq := fakes.FakeUserRegisterRequest()
+		fakeUser := fakes.FakeUser()
 
-// 	userRepo := new(mocks.UserRepository)
-// 	userService := services.NewUserService(userRepo, 2*time.Second)
+		userRepo.On("Register", mock.Anything, mock.AnythingOfType("*models.User")).Return(nil).Once()
 
-// 	for _, tt := range testCases {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			userRepo.On("Register", mock.Anything, &u).Return(tt.resRepo).Times(1)
+		user, err := userService.Register(context.TODO(), &fakeReq)
+		assert.NoError(t, err)
+		assert.Equal(t, fakeUser.UserName, user.UserName)
+		userRepo.AssertExpectations(t)
+	})
 
-// 			err := userService.Register(context.TODO(), &u)
+	t.Run("fail register user in repository", func(t *testing.T) {
+		fakeReq := fakes.FakeUserRegisterRequest()
 
-// 			assert.Equal(t, err, tt.resSer)
-// 			userRepo.AssertExpectations(t)
-// 		})
-// 	}
-// }
+		userRepo.On("Register", mock.Anything, mock.AnythingOfType("*models.User")).Return(models.ErrInternalServerError).Once()
+
+		user, err := userService.Register(context.TODO(), &fakeReq)
+		assert.Equal(t, models.ErrInternalServerError, err)
+		assert.Equal(t, primitive.NilObjectID, user.ID)
+		userRepo.AssertExpectations(t)
+	})
+}

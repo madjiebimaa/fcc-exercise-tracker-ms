@@ -29,7 +29,7 @@ func (e *ExerciseHandler) Create(c *gin.Context) {
 
 	var req requests.ExerciseCreate
 	if err := c.ShouldBindJSON(&req); err != nil {
-		helpers.FailResponse(c, http.StatusBadRequest, "body request", models.ErrBadInput)
+		helpers.FailResponse(c, http.StatusBadRequest, "request body", models.ErrBadInput)
 		return
 	}
 

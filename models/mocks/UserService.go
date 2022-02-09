@@ -23,10 +23,10 @@ func (u *UserService) Register(ctx context.Context, req *requests.UserRegister) 
 	}
 
 	var r1 error
-	if ref, ok := ret.Get(0).(func(context.Context, *requests.UserRegister) error); ok {
+	if ref, ok := ret.Get(1).(func(context.Context, *requests.UserRegister) error); ok {
 		r1 = ref(ctx, req)
 	} else {
-		r1 = ret.Error(0)
+		r1 = ret.Error(1)
 	}
 
 	return r0, r1

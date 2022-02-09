@@ -33,7 +33,6 @@ func TestUserHandler(t *testing.T) {
 		rec := httptest.NewRecorder()
 		_, r := gin.CreateTestContext(rec)
 		r.POST("/api/users", userHandler.Register)
-
 		r.ServeHTTP(rec, req)
 
 		assert.Equal(t, http.StatusCreated, rec.Code)
