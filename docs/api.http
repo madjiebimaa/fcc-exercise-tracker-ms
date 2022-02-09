@@ -3,9 +3,20 @@
 @host = {{hostname}}:{{port}}
 @baseURL = http://{{host}}/api
 
-# Create User
+### Create User
 POST {{baseURL}}/users HTTP/1.1
 
 {
-    "username": "madjiebimaa"
+    "username": "sakha"
 }
+
+### Create Exercise
+POST {{baseURL}}/users/62034f817663d57f03323508/exercises HTTP/1.1
+
+{
+    "description": "mancing mania mantap",
+    "duration": 2,
+    "date": "2022-12-12"
+}
+
+# "date": "Tue Dec 12 2000",

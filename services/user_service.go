@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/requests"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type userService struct {
@@ -19,9 +21,18 @@ func NewUserService(userRepo models.UserRepository, contextTimeout time.Duration
 	}
 }
 
-func (u *userService) Register(c context.Context, user *models.User) error {
+func (u *userService) Register(c context.Context, req *requests.UserRegister) (models.User, error) {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
 
-	return u.userRepo.Register(ctx, user)
+	user := models.User{
+		ID:       primitive.NewObjectID(),
+		UserName: req.UserName,
+	}
+
+	if err := u.userRepo.Register(ctx, &user); err != nil {
+		return models.User{}, err
+	}
+
+	return user, nil
 }

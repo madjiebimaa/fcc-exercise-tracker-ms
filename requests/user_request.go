@@ -1,5 +1,5 @@
 package requests
 
 type UserRegister struct {
-	UserName string `json:"username" binding:"required,min=7"`
+	UserName string `json:"username" binding:"required,min=5"`
 }

@@ -37,6 +37,7 @@ func main() {
 
 	db := cl.Database(os.Getenv("DB_NAME"))
 	userColl := db.Collection(os.Getenv("USER_COLLECTION"))
+	exerciseColl := db.Collection(os.Getenv("EXERCISE_COLLECTION"))
 
 	timeoutContextEnv, _ := strconv.Atoi(os.Getenv("TIMEOUT_CONTEXT"))
 	timeoutContext := time.Duration(timeoutContextEnv) * time.Second
@@ -45,10 +46,15 @@ func main() {
 	userService := services.NewUserService(userRepo, timeoutContext)
 	userHandler := handlers.NewUserHandler(userService)
 
+	exerciseRepo := repositories.NewMongoExerciseRepository(exerciseColl)
+	exerciseService := services.NewExerciseService(exerciseRepo, userRepo, timeoutContext)
+	exerciseHandler := handlers.NewExerciseHandler(exerciseService)
+
 	r := gin.New()
 	r.Use(middlewares.CORS())
 
 	r.POST("/api/users", userHandler.Register)
+	r.POST("/api/users/:userID/exercises", exerciseHandler.Create)
 
 	if err := r.Run(os.Getenv("SERVER_ADDRESS")); err != nil {
 		log.Fatal("can't connect to server")

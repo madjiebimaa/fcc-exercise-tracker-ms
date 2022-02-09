@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/helpers"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/requests"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,24 +23,16 @@ func NewUserHandler(userService models.UserService) *UserHandler {
 func (u *UserHandler) Register(c *gin.Context) {
 	var req requests.UserRegister
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "user input is not valid",
-		})
+		helpers.FailResponse(c, http.StatusBadRequest, "request body", models.ErrBadInput)
 		return
-	}
-
-	user := models.User{
-		ID:       primitive.NewObjectID(),
-		UserName: req.UserName,
 	}
 
 	ctx := c.Request.Context()
-	if err := u.userService.Register(ctx, &user); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": err.Error(),
-		})
+	user, err := u.userService.Register(ctx, &req)
+	if err != nil {
+		helpers.FailResponse(c, helpers.GetStatusCode(err), "service", err)
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	helpers.SuccessResponse(c, http.StatusCreated, user)
 }
