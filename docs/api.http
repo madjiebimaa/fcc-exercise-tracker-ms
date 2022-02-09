@@ -1,0 +1,11 @@
+@hostname = localhost
+@port = 3000
+@host = {{hostname}}:{{port}}
+@baseURL = http://{{host}}/api
+
+# Create User
+POST {{baseURL}}/users HTTP/1.1
+
+{
+    "username": "madjiebimaa"
+}
