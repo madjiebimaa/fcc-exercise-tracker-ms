@@ -22,5 +22,6 @@ func NewUserService(userRepo models.UserRepository, contextTimeout time.Duration
 func (u *userService) Register(c context.Context, user *models.User) error {
 	ctx, cancel := context.WithTimeout(c, u.contextTimeout)
 	defer cancel()
+
 	return u.userRepo.Register(ctx, user)
 }
