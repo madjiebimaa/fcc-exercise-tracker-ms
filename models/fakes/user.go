@@ -6,6 +6,7 @@ import (
 
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/requests"
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/responses"
 )
 
 func FakeUser() models.User {
@@ -21,8 +22,8 @@ func FakeUserRegisterRequest() requests.UserRegister {
 	}
 }
 
-func FakeUserReader(UserName string) (*strings.Reader, error) {
-	reqBody, err := json.Marshal(models.User{
+func FakeUserRegisterReader() (*strings.Reader, error) {
+	reqBody, err := json.Marshal(requests.UserRegister{
 		UserName: UserName,
 	})
 	if err != nil {
@@ -33,7 +34,11 @@ func FakeUserReader(UserName string) (*strings.Reader, error) {
 }
 
 func FakeUserJSON() ([]byte, error) {
-	reqBody, err := json.Marshal(FakeUser())
+	reqBody, err := json.Marshal(responses.BaseResponse{
+		Success: true,
+		Data:    FakeUser(),
+		Error:   nil,
+	})
 	if err != nil {
 		return nil, err
 	}

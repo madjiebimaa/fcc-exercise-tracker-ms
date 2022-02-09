@@ -61,59 +61,61 @@ func TestExerciseCreate(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 		// TODO: create fakes data for error handler
+		exerciseService.AssertExpectations(t)
 	})
 
 	t.Run("fail request body is not valid", func(t *testing.T) {
-		t.Run("success", func(t *testing.T) {
-			url := fmt.Sprintf("/api/users/%s/exercises", fakes.UserIDStr)
-			req, err := http.NewRequest(http.MethodPost, url, nil)
-			assert.NoError(t, err)
+		url := fmt.Sprintf("/api/users/%s/exercises", fakes.UserIDStr)
+		req, err := http.NewRequest(http.MethodPost, url, nil)
+		assert.NoError(t, err)
 
-			rec := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(rec)
-			r.POST("/api/users/:userID/exercises", exerciseHandler.Create)
-			r.ServeHTTP(rec, req)
+		rec := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(rec)
+		r.POST("/api/users/:userID/exercises", exerciseHandler.Create)
+		r.ServeHTTP(rec, req)
 
-			assert.Equal(t, http.StatusBadRequest, rec.Code)
-			// TODO: create fakes data for error handler
-		})
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		// TODO: create fakes data for error handler
+		exerciseService.AssertExpectations(t)
 	})
 
 	t.Run("fail url param is not valid id", func(t *testing.T) {
-		t.Run("success", func(t *testing.T) {
-			url := fmt.Sprintf("/api/users/%s/exercises", "invalid")
-			req, err := http.NewRequest(http.MethodPost, url, nil)
-			assert.NoError(t, err)
+		fakeStrRead, err := fakes.FakeExerciseCreateReader()
+		assert.NoError(t, err)
 
-			rec := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(rec)
-			r.POST("/api/users/:userID/exercises", exerciseHandler.Create)
-			r.ServeHTTP(rec, req)
+		url := fmt.Sprintf("/api/users/%s/exercises", "invalid")
+		req, err := http.NewRequest(http.MethodPost, url, fakeStrRead)
+		assert.NoError(t, err)
 
-			assert.Equal(t, http.StatusBadRequest, rec.Code)
-			// TODO: create fakes data for error handler
-		})
+		rec := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(rec)
+		r.POST("/api/users/:userID/exercises", exerciseHandler.Create)
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		fmt.Println(rec.Body)
+		// TODO: create fakes data for error handler
+		exerciseService.AssertExpectations(t)
 	})
 
-	t.Run("fail create exercise in repository", func(t *testing.T) {
-		t.Run("success", func(t *testing.T) {
-			fakeReq := fakes.FakeExerciseCreateRequest()
-			fakeStrRead, err := fakes.FakeExerciseCreateReader()
-			assert.NoError(t, err)
+	t.Run("fail create exercise in service", func(t *testing.T) {
+		fakeReq := fakes.FakeExerciseCreateRequest()
+		fakeStrRead, err := fakes.FakeExerciseCreateReader()
+		assert.NoError(t, err)
 
-			exerciseService.On("Create", mock.Anything, &fakeReq).Return(responses.ExerciseCreate{}, models.ErrInternalServerError).Once()
+		exerciseService.On("Create", mock.Anything, &fakeReq).Return(responses.ExerciseCreate{}, models.ErrInternalServerError).Once()
 
-			url := fmt.Sprintf("/api/users/%s/exercises", fakes.UserIDStr)
-			req, err := http.NewRequest(http.MethodPost, url, fakeStrRead)
-			assert.NoError(t, err)
+		url := fmt.Sprintf("/api/users/%s/exercises", fakes.UserIDStr)
+		req, err := http.NewRequest(http.MethodPost, url, fakeStrRead)
+		assert.NoError(t, err)
 
-			rec := httptest.NewRecorder()
-			_, r := gin.CreateTestContext(rec)
-			r.POST("/api/users/:userID/exercises", exerciseHandler.Create)
-			r.ServeHTTP(rec, req)
+		rec := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(rec)
+		r.POST("/api/users/:userID/exercises", exerciseHandler.Create)
+		r.ServeHTTP(rec, req)
 
-			assert.Equal(t, http.StatusInternalServerError, rec.Code)
-			exerciseService.AssertExpectations(t)
-		})
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		// TODO: create fakes data for error handler
+		exerciseService.AssertExpectations(t)
 	})
 }

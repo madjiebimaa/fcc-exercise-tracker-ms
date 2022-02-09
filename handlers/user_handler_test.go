@@ -1,14 +1,13 @@
 package handlers_test
 
 import (
-	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/handlers"
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models/fakes"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models/mocks"
 	"github.com/stretchr/testify/assert"
@@ -22,12 +21,16 @@ func TestUserHandler(t *testing.T) {
 	userHandler := handlers.NewUserHandler(userService)
 
 	t.Run("success", func(t *testing.T) {
-		sucReq, err := fakes.FakeUserReader("madjiebimaa")
+		fakeReq := fakes.FakeUserRegisterRequest()
+		fakeRes, err := fakes.FakeUserJSON()
 		assert.NoError(t, err)
+		fakeReqReader, err := fakes.FakeUserRegisterReader()
+		assert.NoError(t, err)
+		fakeUser := fakes.FakeUser()
 
-		userService.On("Register", mock.Anything, mock.AnythingOfType("*models.User")).Return(nil).Times(1)
+		userService.On("Register", mock.Anything, &fakeReq).Return(fakeUser, nil).Once()
 
-		req, err := http.NewRequest(http.MethodPost, "/api/users", sucReq)
+		req, err := http.NewRequest(http.MethodPost, "/api/users", fakeReqReader)
 		assert.NoError(t, err)
 
 		rec := httptest.NewRecorder()
@@ -36,53 +39,41 @@ func TestUserHandler(t *testing.T) {
 		r.ServeHTTP(rec, req)
 
 		assert.Equal(t, http.StatusCreated, rec.Code)
-		// assert.Equal(t, tt.resBody, rec.Body.Bytes())
+		assert.Equal(t, fakeRes, rec.Body.Bytes())
 		userService.AssertExpectations(t)
 	})
 
-	t.Run("fail invalid request", func(t *testing.T) {
-		failReq, err := fakes.FakeUserReader("adjie")
-		assert.NoError(t, err)
-		failBadReqRes, err := json.Marshal(gin.H{
-			"message": "user input is not valid",
-		})
-		assert.NoError(t, err)
-
-		req, err := http.NewRequest(http.MethodPost, "/api/users", failReq)
+	t.Run("fail request body is not valid", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodPost, "/api/users", nil)
 		assert.NoError(t, err)
 
 		rec := httptest.NewRecorder()
 		_, r := gin.CreateTestContext(rec)
 		r.POST("/api/users", userHandler.Register)
-
 		r.ServeHTTP(rec, req)
 
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
-		assert.Equal(t, failBadReqRes, rec.Body.Bytes())
+		// TODO: create fakes data for error handler
+		userService.AssertExpectations(t)
 	})
 
-	t.Run("fail in service", func(t *testing.T) {
-		sucReq, err := fakes.FakeUserReader("madjiebimaa")
-		assert.NoError(t, err)
-		interErr := errors.New("internal server error")
-		failInterSerRes, err := json.Marshal(gin.H{
-			"message": interErr.Error(),
-		})
+	t.Run("fail register user in service", func(t *testing.T) {
+		fakeReq := fakes.FakeUserRegisterRequest()
+		fakeReqReader, err := fakes.FakeUserRegisterReader()
 		assert.NoError(t, err)
 
-		userService.On("Register", mock.Anything, mock.AnythingOfType("*models.User")).Return(interErr).Times(1)
+		userService.On("Register", mock.Anything, &fakeReq).Return(models.User{}, models.ErrInternalServerError).Once()
 
-		req, err := http.NewRequest(http.MethodPost, "/api/users", sucReq)
+		req, err := http.NewRequest(http.MethodPost, "/api/users", fakeReqReader)
 		assert.NoError(t, err)
 
 		rec := httptest.NewRecorder()
 		_, r := gin.CreateTestContext(rec)
 		r.POST("/api/users", userHandler.Register)
-
 		r.ServeHTTP(rec, req)
 
 		assert.Equal(t, http.StatusInternalServerError, rec.Code)
-		assert.Equal(t, failInterSerRes, rec.Body.Bytes())
+		// TODO: create fakes data for error handler
 		userService.AssertExpectations(t)
 	})
 }
