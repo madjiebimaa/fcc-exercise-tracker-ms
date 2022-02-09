@@ -1,27 +1,26 @@
 package helpers
 
 import (
-	"log"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/responses"
 )
 
-func StripedDateToTime(date string) (time.Time, error) {
-	d := strings.Split(date, "-")
-	var dateArr []int
-	for _, v := range d {
-		val, err := strconv.Atoi(v)
-		if err != nil {
-			log.Fatal(err)
-			return time.Time{}, models.ErrInternalServerError
-		}
-
-		dateArr = append(dateArr, val)
+func ToBaseExercise(exercise models.Exercise) responses.BaseExercise {
+	strDate := exercise.Date.Format(time.RFC1123)
+	return responses.BaseExercise{
+		ID:          exercise.ID,
+		Description: exercise.Description,
+		Duration:    exercise.Duration,
+		Date:        strDate,
 	}
+}
 
-	ti := time.Date(dateArr[0], time.Month(dateArr[1]), dateArr[2], 0, 0, 0, 0, time.UTC)
-	return ti, nil
+func ToBaseExercises(exercises []models.Exercise) []responses.BaseExercise {
+	var baseExercises []responses.BaseExercise
+	for _, exercise := range exercises {
+		baseExercises = append(baseExercises, ToBaseExercise(exercise))
+	}
+	return baseExercises
 }

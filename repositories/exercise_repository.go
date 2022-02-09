@@ -5,6 +5,8 @@ import (
 	"log"
 
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -25,4 +27,27 @@ func (m *mongoExerciseRepository) Create(ctx context.Context, exercise *models.E
 	}
 
 	return nil
+}
+
+func (m *mongoExerciseRepository) GetByUserID(ctx context.Context, userID primitive.ObjectID) ([]models.Exercise, error) {
+	filter := bson.D{{Key: "user_id", Value: userID}}
+	cur, err := m.coll.Find(ctx, filter)
+	if err == nil {
+		var exercises []models.Exercise
+		for cur.Next(ctx) {
+			var exercise models.Exercise
+			if err := cur.Decode(&exercise); err != nil {
+				log.Fatal(err)
+				return []models.Exercise{}, models.ErrInternalServerError
+			}
+			exercises = append(exercises, exercise)
+		}
+
+		return exercises, nil
+	} else if err == mongo.ErrNoDocuments {
+		return []models.Exercise{}, nil
+	} else {
+		log.Fatal(err)
+		return []models.Exercise{}, models.ErrInternalServerError
+	}
 }

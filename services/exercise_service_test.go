@@ -80,3 +80,84 @@ func TestExerciseCreate(t *testing.T) {
 		userRepo.AssertExpectations(t)
 	})
 }
+
+func TestExerciseLogs(t *testing.T) {
+	userRepo := new(mocks.UserRepository)
+	exerciseRepo := new(mocks.ExerciseRepository)
+	exerciseService := services.NewExerciseService(exerciseRepo, userRepo, 2*time.Second)
+
+	t.Run("success", func(t *testing.T) {
+		userID := fakes.UserID
+		fakeUser := fakes.FakeUser()
+		fakeExercises := []models.Exercise{
+			fakes.FakeExercise(),
+		}
+
+		userRepo.On("GetByID", mock.Anything, userID).Return(fakeUser, nil).Once()
+		exerciseRepo.On("GetByUserID", mock.Anything, userID).Return(fakeExercises, nil).Once()
+
+		res, err := exerciseService.GetByUserID(context.TODO(), userID)
+		assert.Equal(t, nil, err)
+		assert.Equal(t, userID, res.User.ID)
+		assert.Equal(t, 1, res.Length)
+		assert.Equal(t, fakeExercises[0].ID, res.Exercises[0].ID)
+		userRepo.AssertExpectations(t)
+		exerciseRepo.AssertExpectations(t)
+	})
+
+	t.Run("fail get user in repository", func(t *testing.T) {
+		userID := fakes.UserID
+
+		userRepo.On("GetByID", mock.Anything, userID).Return(models.User{}, models.ErrInternalServerError).Once()
+
+		res, err := exerciseService.GetByUserID(context.TODO(), userID)
+		assert.Equal(t, models.ErrInternalServerError, err)
+		assert.Equal(t, primitive.NilObjectID, res.User.ID)
+		assert.Equal(t, 0, res.Length)
+		userRepo.AssertExpectations(t)
+		exerciseRepo.AssertExpectations(t)
+	})
+
+	t.Run("fail user not found in repository", func(t *testing.T) {
+		userID := fakes.UserID
+
+		userRepo.On("GetByID", mock.Anything, userID).Return(models.User{}, nil).Once()
+
+		res, err := exerciseService.GetByUserID(context.TODO(), userID)
+		assert.Equal(t, models.ErrNotFound, err)
+		assert.Equal(t, primitive.NilObjectID, res.User.ID)
+		assert.Equal(t, 0, res.Length)
+		userRepo.AssertExpectations(t)
+		exerciseRepo.AssertExpectations(t)
+	})
+
+	t.Run("fail get exercises in repository", func(t *testing.T) {
+		userID := fakes.UserID
+		fakeUser := fakes.FakeUser()
+
+		userRepo.On("GetByID", mock.Anything, userID).Return(fakeUser, nil).Once()
+		exerciseRepo.On("GetByUserID", mock.Anything, userID).Return([]models.Exercise{}, models.ErrInternalServerError).Once()
+
+		res, err := exerciseService.GetByUserID(context.TODO(), userID)
+		assert.Equal(t, models.ErrInternalServerError, err)
+		assert.Equal(t, primitive.NilObjectID, res.User.ID)
+		assert.Equal(t, 0, res.Length)
+		userRepo.AssertExpectations(t)
+		exerciseRepo.AssertExpectations(t)
+	})
+
+	t.Run("fail exercises is not found in repository", func(t *testing.T) {
+		userID := fakes.UserID
+		fakeUser := fakes.FakeUser()
+
+		userRepo.On("GetByID", mock.Anything, userID).Return(fakeUser, nil).Once()
+		exerciseRepo.On("GetByUserID", mock.Anything, userID).Return([]models.Exercise{}, nil).Once()
+
+		res, err := exerciseService.GetByUserID(context.TODO(), userID)
+		assert.Equal(t, models.ErrNotFound, err)
+		assert.Equal(t, primitive.NilObjectID, res.User.ID)
+		assert.Equal(t, 0, res.Length)
+		userRepo.AssertExpectations(t)
+		exerciseRepo.AssertExpectations(t)
+	})
+}

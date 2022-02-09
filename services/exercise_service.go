@@ -54,15 +54,40 @@ func (e *exerciseService) Create(c context.Context, req *requests.ExerciseCreate
 		return responses.ExerciseCreate{}, err
 	}
 
-	strDate := date.Format(time.RFC1123)
 	res := responses.ExerciseCreate{
-		User: responses.BaseUser(user),
-		Exercise: responses.BaseExercise{
-			ID:          exercise.ID,
-			Description: exercise.Description,
-			Duration:    exercise.Duration,
-			Date:        strDate,
-		},
+		User:     responses.BaseUser(user),
+		Exercise: helpers.ToBaseExercise(exercise),
+	}
+
+	return res, nil
+}
+
+func (e *exerciseService) GetByUserID(c context.Context, userID primitive.ObjectID) (responses.ExerciseLogs, error) {
+	ctx, cancel := context.WithTimeout(c, e.contextTimeout)
+	defer cancel()
+
+	user, err := e.userRepo.GetByID(ctx, userID)
+	if err != nil {
+		return responses.ExerciseLogs{}, err
+	}
+
+	if user.ID == primitive.NilObjectID {
+		return responses.ExerciseLogs{}, models.ErrNotFound
+	}
+
+	exercises, err := e.exerciseRepo.GetByUserID(ctx, userID)
+	if err != nil {
+		return responses.ExerciseLogs{}, err
+	}
+
+	if len(exercises) == 0 {
+		return responses.ExerciseLogs{}, models.ErrNotFound
+	}
+
+	res := responses.ExerciseLogs{
+		User:      responses.BaseUser(user),
+		Length:    len(exercises),
+		Exercises: helpers.ToBaseExercises(exercises),
 	}
 
 	return res, nil
