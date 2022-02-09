@@ -41,10 +41,13 @@ func (m *mongoUserRepository) Register(ctx context.Context, user *models.User) e
 func (m *mongoUserRepository) GetByID(ctx context.Context, userID primitive.ObjectID) (models.User, error) {
 	filter := bson.D{{Key: "_id", Value: userID}}
 	var user models.User
-	if err := m.coll.FindOne(ctx, filter).Decode(&user); err != nil {
+	err := m.coll.FindOne(ctx, filter).Decode(&user)
+	if err == nil {
+		return user, nil
+	} else if err == mongo.ErrNoDocuments {
+		return models.User{}, nil
+	} else {
 		log.Fatal(err)
 		return models.User{}, models.ErrInternalServerError
 	}
-
-	return user, nil
 }

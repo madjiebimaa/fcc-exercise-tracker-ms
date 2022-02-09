@@ -36,10 +36,10 @@ func (u *UserRepository) GetByID(ctx context.Context, userID primitive.ObjectID)
 	}
 
 	var r1 error
-	if ref, ok := ret.Get(0).(func(context.Context, primitive.ObjectID) error); ok {
+	if ref, ok := ret.Get(1).(func(context.Context, primitive.ObjectID) error); ok {
 		r1 = ref(ctx, userID)
 	} else {
-		r1 = ret.Error(0)
+		r1 = ret.Error(1)
 	}
 
 	return r0, r1

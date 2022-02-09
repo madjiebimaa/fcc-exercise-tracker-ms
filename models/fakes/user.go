@@ -16,7 +16,7 @@ func FakeUserRegisterRequest() requests.UserRegister {
 
 func FakeUser() models.User {
 	return models.User{
-		ID:       id,
+		ID:       user_id,
 		UserName: username,
 	}
 }

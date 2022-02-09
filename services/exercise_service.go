@@ -2,11 +2,9 @@ package services
 
 import (
 	"context"
-	"log"
-	"strconv"
-	"strings"
 	"time"
 
+	"github.com/madjiebimaa/fcc-exercise-tracker-ms/helpers"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/requests"
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/responses"
@@ -36,19 +34,15 @@ func (e *exerciseService) Create(c context.Context, req *requests.ExerciseCreate
 		return responses.ExerciseCreate{}, err
 	}
 
-	d := strings.Split(req.Date, "-")
-	var dateArr []int
-	for _, v := range d {
-		val, err := strconv.Atoi(v)
-		if err != nil {
-			log.Fatal(err)
-			return responses.ExerciseCreate{}, models.ErrInternalServerError
-		}
-
-		dateArr = append(dateArr, val)
+	if user.ID == primitive.NilObjectID {
+		return responses.ExerciseCreate{}, models.ErrNotFound
 	}
 
-	date := time.Date(dateArr[0], time.Month(dateArr[1]), dateArr[2], 0, 0, 0, 0, time.UTC)
+	date, err := helpers.StripedDateToTime(req.Date)
+	if err != nil {
+		return responses.ExerciseCreate{}, err
+	}
+
 	exercise := models.Exercise{
 		ID:          primitive.NewObjectID(),
 		Description: req.Description,
