@@ -27,6 +27,14 @@ func FakeExerciseCreateRequest() requests.ExerciseCreate {
 	}
 }
 
+func FakeExerciseLogsRequest() requests.ExerciseLogsFilter {
+	return requests.ExerciseLogsFilter{
+		From:  From,
+		To:    To,
+		Limit: Limit,
+	}
+}
+
 func FakeExerciseCreateResponse() responses.ExerciseCreate {
 	return responses.ExerciseCreate{
 		User: responses.BaseUser(FakeUser()),
@@ -56,6 +64,33 @@ func FakeExerciseCreateResponseJSON() ([]byte, error) {
 	resBody, err := json.Marshal(responses.BaseResponse{
 		Success: true,
 		Data:    FakeExerciseCreateResponse(),
+		Error:   nil,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resBody, nil
+}
+
+func FakeExerciseLogsResponse() responses.ExerciseLogs {
+	return responses.ExerciseLogs{
+		User:  responses.BaseUser(FakeUser()),
+		Count: 1,
+		Exercises: []responses.BaseExercise{
+			{
+				ID:          ExerciseID,
+				Description: Description,
+				Duration:    Duration,
+				Date:        StrDate,
+			},
+		},
+	}
+}
+
+func FakeExerciseLogsResponseJSON() ([]byte, error) {
+	resBody, err := json.Marshal(responses.BaseResponse{
+		Success: true,
+		Data:    FakeExerciseLogsResponse(),
 		Error:   nil,
 	})
 	if err != nil {

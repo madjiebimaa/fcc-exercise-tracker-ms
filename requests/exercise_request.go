@@ -10,3 +10,9 @@ type ExerciseCreate struct {
 	Duration    int                `json:"duration" binding:"required,gte=1"`
 	Date        string             `json:"date" binding:"required"`
 }
+
+type ExerciseLogsFilter struct {
+	From  string `form:"from"`
+	To    string `form:"to"`
+	Limit int    `form:"limit"`
+}

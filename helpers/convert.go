@@ -1,6 +1,8 @@
 package helpers
 
 import (
+	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/madjiebimaa/fcc-exercise-tracker-ms/models"
@@ -23,4 +25,10 @@ func ToBaseExercises(exercises []models.Exercise) []responses.BaseExercise {
 		baseExercises = append(baseExercises, ToBaseExercise(exercise))
 	}
 	return baseExercises
+}
+
+func QueryToStruct(ctx context.Context, keyCtx string, result interface{}) {
+	query := ctx.Value(keyCtx)
+	byteData, _ := json.Marshal(query)
+	json.Unmarshal(byteData, &result)
 }

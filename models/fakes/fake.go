@@ -16,7 +16,11 @@ var (
 	ExerciseID, _ = primitive.ObjectIDFromHex(ExerciseIDStr)
 	Description   = "finished backend freecodecamp courses"
 	Duration      = 3
-	Date          = "2022-02-09"
+	Date          = "2045-02-09"
 	DateTime, _   = helpers.StripedDateToTime(Date)
 	StrDate       = DateTime.Format(time.RFC1123)
+
+	From  = "2044-02-09"
+	To    = "2046-02-09"
+	Limit = 1
 )

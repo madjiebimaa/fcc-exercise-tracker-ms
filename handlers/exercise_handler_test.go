@@ -119,3 +119,73 @@ func TestExerciseCreate(t *testing.T) {
 		exerciseService.AssertExpectations(t)
 	})
 }
+
+func TestExerciseGetByUserID(t *testing.T) {
+	exerciseService := new(mocks.ExerciseService)
+	exerciseHandler := handlers.NewExerciseHandler(exerciseService)
+
+	t.Run("success", func(t *testing.T) {
+		fakeRes := fakes.FakeExerciseLogsResponse()
+		fakeResJSON, err := fakes.FakeExerciseLogsResponseJSON()
+		assert.NoError(t, err)
+
+		exerciseService.On("GetByUserID", mock.Anything, fakes.UserID).Return(fakeRes, nil).Once()
+
+		url := fmt.Sprintf("/api/users/%s/logs", fakes.UserIDStr)
+		req, err := http.NewRequest(http.MethodPost, url, nil)
+		assert.NoError(t, err)
+
+		rec := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(rec)
+		r.POST("/api/users/:userID/logs", exerciseHandler.GetByUserID)
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, fakeResJSON, rec.Body.Bytes())
+		exerciseService.AssertExpectations(t)
+	})
+
+	t.Run("fail user id is not found in url param", func(t *testing.T) {
+		url := fmt.Sprintf("/api/users/%s/logs", "")
+		req, err := http.NewRequest(http.MethodPost, url, nil)
+		assert.NoError(t, err)
+
+		rec := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(rec)
+		r.POST("/api/users/:userID/logs", exerciseHandler.GetByUserID)
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		exerciseService.AssertExpectations(t)
+	})
+
+	t.Run("fail url param is not valid id", func(t *testing.T) {
+		url := fmt.Sprintf("/api/users/%s/logs", "invalid")
+		req, err := http.NewRequest(http.MethodPost, url, nil)
+		assert.NoError(t, err)
+
+		rec := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(rec)
+		r.POST("/api/users/:userID/logs", exerciseHandler.GetByUserID)
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		exerciseService.AssertExpectations(t)
+	})
+
+	t.Run("fail get logs by user id in service", func(t *testing.T) {
+		exerciseService.On("GetByUserID", mock.Anything, fakes.UserID).Return(responses.ExerciseLogs{}, models.ErrInternalServerError).Once()
+
+		url := fmt.Sprintf("/api/users/%s/logs", fakes.UserIDStr)
+		req, err := http.NewRequest(http.MethodPost, url, nil)
+		assert.NoError(t, err)
+
+		rec := httptest.NewRecorder()
+		_, r := gin.CreateTestContext(rec)
+		r.POST("/api/users/:userID/logs", exerciseHandler.GetByUserID)
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		exerciseService.AssertExpectations(t)
+	})
+}

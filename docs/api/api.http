@@ -14,9 +14,10 @@ POST {{baseURL}}/users HTTP/1.1
 POST {{baseURL}}/users/62034f817663d57f03323508/exercises HTTP/1.1
 
 {
-    "description": "mancing mania mantap",
+    "description": "mancing mania njos",
     "duration": 2,
     "date": "2022-12-12"
 }
 
-# "date": "Tue Dec 12 2000",
+### Get Logs
+GET {{baseURL}}/users/62034f817663d57f03323508/logs HTTP/1.1

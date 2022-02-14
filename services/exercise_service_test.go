@@ -64,6 +64,22 @@ func TestExerciseCreate(t *testing.T) {
 		userRepo.AssertExpectations(t)
 	})
 
+	t.Run("fail date is invalid time", func(t *testing.T) {
+		fakeReq := fakes.FakeExerciseCreateRequest()
+		fakeReq.Date = "2022-02-09"
+		fakeUser := fakes.FakeUser()
+
+		userRepo.On("GetByID", mock.Anything, fakeReq.UserID).Return(fakeUser, nil).Once()
+
+		res, err := exerciseService.Create(context.TODO(), &fakeReq)
+
+		assert.Equal(t, models.ErrBadInput, err)
+		assert.Equal(t, res.Exercise.ID, primitive.NilObjectID)
+		assert.Equal(t, res.User.ID, primitive.NilObjectID)
+		exerciseRepo.AssertExpectations(t)
+		userRepo.AssertExpectations(t)
+	})
+
 	t.Run("fail create exercise in repository", func(t *testing.T) {
 		fakeReq := fakes.FakeExerciseCreateRequest()
 		fakeUser := fakes.FakeUser()
@@ -99,7 +115,7 @@ func TestExerciseLogs(t *testing.T) {
 		res, err := exerciseService.GetByUserID(context.TODO(), userID)
 		assert.Equal(t, nil, err)
 		assert.Equal(t, userID, res.User.ID)
-		assert.Equal(t, 1, res.Length)
+		assert.Equal(t, 1, res.Count)
 		assert.Equal(t, fakeExercises[0].ID, res.Exercises[0].ID)
 		userRepo.AssertExpectations(t)
 		exerciseRepo.AssertExpectations(t)
@@ -113,7 +129,7 @@ func TestExerciseLogs(t *testing.T) {
 		res, err := exerciseService.GetByUserID(context.TODO(), userID)
 		assert.Equal(t, models.ErrInternalServerError, err)
 		assert.Equal(t, primitive.NilObjectID, res.User.ID)
-		assert.Equal(t, 0, res.Length)
+		assert.Equal(t, 0, res.Count)
 		userRepo.AssertExpectations(t)
 		exerciseRepo.AssertExpectations(t)
 	})
@@ -126,7 +142,7 @@ func TestExerciseLogs(t *testing.T) {
 		res, err := exerciseService.GetByUserID(context.TODO(), userID)
 		assert.Equal(t, models.ErrNotFound, err)
 		assert.Equal(t, primitive.NilObjectID, res.User.ID)
-		assert.Equal(t, 0, res.Length)
+		assert.Equal(t, 0, res.Count)
 		userRepo.AssertExpectations(t)
 		exerciseRepo.AssertExpectations(t)
 	})
@@ -141,7 +157,7 @@ func TestExerciseLogs(t *testing.T) {
 		res, err := exerciseService.GetByUserID(context.TODO(), userID)
 		assert.Equal(t, models.ErrInternalServerError, err)
 		assert.Equal(t, primitive.NilObjectID, res.User.ID)
-		assert.Equal(t, 0, res.Length)
+		assert.Equal(t, 0, res.Count)
 		userRepo.AssertExpectations(t)
 		exerciseRepo.AssertExpectations(t)
 	})
@@ -156,7 +172,7 @@ func TestExerciseLogs(t *testing.T) {
 		res, err := exerciseService.GetByUserID(context.TODO(), userID)
 		assert.Equal(t, models.ErrNotFound, err)
 		assert.Equal(t, primitive.NilObjectID, res.User.ID)
-		assert.Equal(t, 0, res.Length)
+		assert.Equal(t, 0, res.Count)
 		userRepo.AssertExpectations(t)
 		exerciseRepo.AssertExpectations(t)
 	})

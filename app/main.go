@@ -55,6 +55,7 @@ func main() {
 
 	r.POST("/api/users", userHandler.Register)
 	r.POST("/api/users/:userID/exercises", exerciseHandler.Create)
+	r.GET("/api/users/:userID/logs", exerciseHandler.GetByUserID)
 
 	if err := r.Run(os.Getenv("SERVER_ADDRESS")); err != nil {
 		log.Fatal("can't connect to server")

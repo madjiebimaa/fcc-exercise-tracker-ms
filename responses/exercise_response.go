@@ -7,6 +7,6 @@ type ExerciseCreate struct {
 
 type ExerciseLogs struct {
 	User      BaseUser       `json:"user"`
-	Length    int            `json:"length"`
+	Count     int            `json:"Count"`
 	Exercises []BaseExercise `json:"exercises"`
 }

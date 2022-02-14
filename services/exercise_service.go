@@ -38,13 +38,14 @@ func (e *exerciseService) Create(c context.Context, req *requests.ExerciseCreate
 		return responses.ExerciseCreate{}, models.ErrNotFound
 	}
 
-	date, err := helpers.StripedDateToTime(req.Date)
-	if err != nil {
-		return responses.ExerciseCreate{}, err
+	date, _ := helpers.StripedDateToTime(req.Date)
+	if date.Before(time.Now()) {
+		return responses.ExerciseCreate{}, models.ErrBadInput
 	}
 
 	exercise := models.Exercise{
 		ID:          primitive.NewObjectID(),
+		UserID:      user.ID,
 		Description: req.Description,
 		Duration:    req.Duration,
 		Date:        date,
@@ -86,7 +87,7 @@ func (e *exerciseService) GetByUserID(c context.Context, userID primitive.Object
 
 	res := responses.ExerciseLogs{
 		User:      responses.BaseUser(user),
-		Length:    len(exercises),
+		Count:     len(exercises),
 		Exercises: helpers.ToBaseExercises(exercises),
 	}
 
