@@ -31,7 +31,7 @@ func (m *mongoUserRepository) Register(ctx context.Context, user *models.User) e
 	if mongo.IsDuplicateKeyError(err) {
 		return models.ErrConflict
 	} else if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return models.ErrInternalServerError
 	}
 
@@ -47,7 +47,7 @@ func (m *mongoUserRepository) GetByID(ctx context.Context, userID primitive.Obje
 	} else if err == mongo.ErrNoDocuments {
 		return models.User{}, nil
 	} else {
-		log.Fatal(err)
+		log.Println(err)
 		return models.User{}, models.ErrInternalServerError
 	}
 }

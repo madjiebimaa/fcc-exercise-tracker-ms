@@ -15,7 +15,7 @@ func StripedDateToTime(date string) (time.Time, error) {
 	for _, v := range d {
 		val, err := strconv.Atoi(v)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 			return time.Time{}, models.ErrInternalServerError
 		}
 
